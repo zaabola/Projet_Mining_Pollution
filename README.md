@@ -91,7 +91,11 @@ Developed at **ESPRIT (École Supérieure Privée d'Ingénierie et de Technologi
 
 ## 📸 Screenshots
 
-*(Add screenshots of your UI, Dark Mode, Mining Segmentation, and Fish Tracking here!)*
+<img width="1920" height="1080" alt="Screenshot (103)" src="https://github.com/user-attachments/assets/b704807b-093e-4a17-8bcc-450ede839489" />
+<img width="1920" height="1080" alt="Screenshot (80)" src="https://github.com/user-attachments/assets/647c0e70-8f3e-47bc-b606-ec7f7ba472bc" />
+<img width="1920" height="1080" alt="Screenshot (81)" src="https://github.com/user-attachments/assets/de4a7b7f-92bc-416e-b27b-9f42e4e3fef1" />
+<img width="1920" height="1080" alt="Screenshot (83)" src="https://github.com/user-attachments/assets/07f3a62e-d0bb-4802-a290-1964e683d940" />
+
 
 ---
 
