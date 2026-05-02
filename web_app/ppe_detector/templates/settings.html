@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block title %}Settings - EcoGuard AI{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div class="page-title">
+        <div class="row">
+            <div class="col-12 col-md-6 order-md-1 order-last">
+                <h3><i class="bi bi-gear-fill me-2"></i>Settings</h3>
+                <p class="text-subtitle text-muted">Customize your EcoGuard AI experience</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="section">
+    <div class="row">
+        <!-- Appearance Settings -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm" style="border-radius: 16px;">
+                <div class="card-header" style="background: transparent; border-bottom: 2px solid #f2f7ff;">
+                    <h5 class="card-title mb-0"><i class="bi bi-palette me-2 text-primary"></i>Appearance</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center p-3 mb-3" style="background: #f8fafe; border-radius: 12px;">
+                        <div>
+                            <h6 class="mb-1"><i class="bi bi-moon-stars-fill me-2"></i>Dark Mode</h6>
+                            <p class="text-muted mb-0 small">Switch to a darker color theme to reduce eye strain</p>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="darkModeToggle" style="width: 50px; height: 26px; cursor: pointer;">
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center p-3" style="background: #f8fafe; border-radius: 12px;">
+                        <div>
+                            <h6 class="mb-1"><i class="bi bi-layout-sidebar me-2"></i>Compact Sidebar</h6>
+                            <p class="text-muted mb-0 small">Use a smaller sidebar for more workspace</p>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="compactSidebarToggle" style="width: 50px; height: 26px; cursor: pointer;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notification Settings -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm" style="border-radius: 16px;">
+                <div class="card-header" style="background: transparent; border-bottom: 2px solid #f2f7ff;">
+                    <h5 class="card-title mb-0"><i class="bi bi-bell me-2 text-primary"></i>Notifications</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center p-3 mb-3" style="background: #f8fafe; border-radius: 12px;">
+                        <div>
+                            <h6 class="mb-1"><i class="bi bi-exclamation-triangle me-2"></i>Detection Alerts</h6>
+                            <p class="text-muted mb-0 small">Get notified when detections exceed thresholds</p>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="alertToggle" style="width: 50px; height: 26px; cursor: pointer;">
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center p-3" style="background: #f8fafe; border-radius: 12px;">
+                        <div>
+                            <h6 class="mb-1"><i class="bi bi-volume-up me-2"></i>Sound Effects</h6>
+                            <p class="text-muted mb-0 small">Play sounds for warning events</p>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="soundToggle" style="width: 50px; height: 26px; cursor: pointer;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status toast -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+        <div id="settingsToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" id="toastMessage">
+                    <i class="bi bi-check-circle me-1"></i> Setting saved!
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ---- Helper: show toast ----
+    function showToast(msg) {
+        const toastEl = document.getElementById('settingsToast');
+        document.getElementById('toastMessage').innerHTML = '<i class="bi bi-check-circle me-1"></i> ' + msg;
+        const toast = new bootstrap.Toast(toastEl, { delay: 2000 });
+        toast.show();
+    }
+
+    // ---- DARK MODE ----
+    const darkToggle = document.getElementById('darkModeToggle');
+    darkToggle.checked = localStorage.getItem('ecoguard-dark-mode') === 'true';
+    darkToggle.addEventListener('change', function() {
+        if (this.checked) {
+            document.body.classList.add('dark-mode');
+            localStorage.setItem('ecoguard-dark-mode', 'true');
+            showToast('Dark mode enabled');
+        } else {
+            document.body.classList.remove('dark-mode');
+            localStorage.setItem('ecoguard-dark-mode', 'false');
+            showToast('Dark mode disabled');
+        }
+    });
+
+    // ---- COMPACT SIDEBAR ----
+    const compactToggle = document.getElementById('compactSidebarToggle');
+    compactToggle.checked = localStorage.getItem('ecoguard-compact-sidebar') === 'true';
+    if (compactToggle.checked) {
+        document.getElementById('sidebar').classList.add('sidebar-compact');
+    }
+    compactToggle.addEventListener('change', function() {
+        const sidebar = document.getElementById('sidebar');
+        if (this.checked) {
+            sidebar.classList.add('sidebar-compact');
+            localStorage.setItem('ecoguard-compact-sidebar', 'true');
+            showToast('Compact sidebar enabled');
+        } else {
+            sidebar.classList.remove('sidebar-compact');
+            localStorage.setItem('ecoguard-compact-sidebar', 'false');
+            showToast('Compact sidebar disabled');
+        }
+    });
+
+    // ---- DETECTION ALERTS ----
+    const alertToggle = document.getElementById('alertToggle');
+    const alertVal = localStorage.getItem('ecoguard-alerts');
+    alertToggle.checked = alertVal === null ? true : alertVal === 'true';
+    alertToggle.addEventListener('change', function() {
+        localStorage.setItem('ecoguard-alerts', this.checked ? 'true' : 'false');
+        showToast(this.checked ? 'Detection alerts enabled' : 'Detection alerts disabled');
+    });
+
+    // ---- SOUND EFFECTS ----
+    const soundToggle = document.getElementById('soundToggle');
+    soundToggle.checked = localStorage.getItem('ecoguard-sounds') === 'true';
+    soundToggle.addEventListener('change', function() {
+        localStorage.setItem('ecoguard-sounds', this.checked ? 'true' : 'false');
+        showToast(this.checked ? 'Sound effects enabled' : 'Sound effects disabled');
+    });
+});
+</script>
+{% endblock %}

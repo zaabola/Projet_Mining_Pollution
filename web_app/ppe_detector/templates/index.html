@@ -1,0 +1,605 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Welcome to EcoGuard AI{% endblock %}
+{% block page_subtitle %}Environmental Monitoring & Worker Safety Platform{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chart-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 25px rgba(0,0,0,0.08);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .chart-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 35px rgba(0,0,0,0.12);
+    }
+    .chart-card .card-header {
+        background: transparent;
+        border-bottom: 1px solid rgba(0,0,0,0.06);
+        padding: 1rem 1.25rem;
+    }
+    .chart-card .card-header h4 {
+        font-size: 1rem;
+        font-weight: 700;
+        margin: 0;
+    }
+    .chart-card .card-body {
+        padding: 1.25rem;
+    }
+    .stat-card {
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: transform 0.25s ease;
+    }
+    .stat-card:hover { transform: translateY(-3px); }
+    .stat-card .stat-value {
+        font-size: 2rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+    .stat-card .stat-label {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        opacity: 0.8;
+    }
+    .stat-gradient-1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color:#fff; }
+    .stat-gradient-2 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color:#fff; }
+    .stat-gradient-3 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color:#fff; }
+    .stat-gradient-4 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color:#fff; }
+    .module-link {
+        display: block;
+        padding: 0.85rem 1rem;
+        border-radius: 8px;
+        text-decoration: none;
+        color: inherit;
+        transition: background 0.2s, transform 0.15s;
+        border: 1px solid rgba(0,0,0,0.06);
+        margin-bottom: 0.5rem;
+    }
+    .module-link:hover {
+        background: rgba(67,94,190,0.06);
+        transform: translateX(4px);
+        color: inherit;
+    }
+    .no-data-msg {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 200px;
+        opacity: 0.5;
+    }
+    .no-data-msg i { font-size: 3rem; margin-bottom: 0.5rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- ─── Summary Stat Cards ─── -->
+<section class="row mb-2">
+    <div class="col-6 col-lg-3 col-md-6 mb-3">
+        <div class="card stat-card stat-gradient-1">
+            <div class="card-body px-3 py-4">
+                <div class="stat-value" id="stat-sessions">0</div>
+                <div class="stat-label mt-1">Total Sessions</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3 col-md-6 mb-3">
+        <div class="card stat-card stat-gradient-2">
+            <div class="card-body px-3 py-4">
+                <div class="stat-value" id="stat-warnings">0</div>
+                <div class="stat-label mt-1">Total Warnings</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3 col-md-6 mb-3">
+        <div class="card stat-card stat-gradient-3">
+            <div class="card-body px-3 py-4">
+                <div class="stat-value" id="stat-detections">0</div>
+                <div class="stat-label mt-1">Total Detections</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3 col-md-6 mb-3">
+        <div class="card stat-card stat-gradient-4">
+            <div class="card-body px-3 py-4">
+                <div class="stat-value" id="stat-safe">0</div>
+                <div class="stat-label mt-1">Safe Detections</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── Charts Row 1: Bar + Pie ─── -->
+<section class="row">
+    <!-- Warnings per Module Bar Chart -->
+    <div class="col-12 col-lg-8 mb-4">
+        <div class="card chart-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4><i class="bi bi-bar-chart-fill text-primary"></i> Warnings by Module</h4>
+                <button class="btn btn-sm btn-light" id="refresh-charts-btn" title="Refresh"><i class="bi bi-arrow-clockwise"></i></button>
+            </div>
+            <div class="card-body">
+                <div id="bar-chart-empty" class="no-data-msg" style="display:none;">
+                    <i class="bi bi-bar-chart"></i>
+                    <span>No detection data yet. Run a model to see charts.</span>
+                </div>
+                <canvas id="warningsBarChart" height="280"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Warnings vs Safe Pie Chart -->
+    <div class="col-12 col-lg-4 mb-4">
+        <div class="card chart-card">
+            <div class="card-header">
+                <h4><i class="bi bi-pie-chart-fill text-danger"></i> Warnings vs Safe</h4>
+            </div>
+            <div class="card-body d-flex align-items-center justify-content-center">
+                <div id="pie-chart-empty" class="no-data-msg" style="display:none;">
+                    <i class="bi bi-pie-chart"></i>
+                    <span>No data yet</span>
+                </div>
+                <canvas id="warningsPieChart" height="280"></canvas>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── Charts Row 2: Timeline + Module Sessions Donut ─── -->
+<section class="row">
+    <!-- Warning Timeline (Line chart) -->
+    <div class="col-12 col-lg-7 mb-4">
+        <div class="card chart-card">
+            <div class="card-header">
+                <h4><i class="bi bi-graph-up text-success"></i> Warning Timeline (Last 30 Sessions)</h4>
+            </div>
+            <div class="card-body">
+                <div id="line-chart-empty" class="no-data-msg" style="display:none;">
+                    <i class="bi bi-graph-up"></i>
+                    <span>No timeline data yet</span>
+                </div>
+                <canvas id="warningsLineChart" height="280"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Module Sessions Donut -->
+    <div class="col-12 col-lg-5 mb-4">
+        <div class="card chart-card">
+            <div class="card-header">
+                <h4><i class="bi bi-diagram-3-fill text-warning"></i> Sessions per Module</h4>
+            </div>
+            <div class="card-body d-flex align-items-center justify-content-center">
+                <div id="donut-chart-empty" class="no-data-msg" style="display:none;">
+                    <i class="bi bi-diagram-3"></i>
+                    <span>No data yet</span>
+                </div>
+                <canvas id="sessionsDonutChart" height="280"></canvas>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── Quick Launch Cards ─── -->
+<section class="row mb-2">
+    <div class="col-6 col-lg-3 col-md-6 mb-3">
+        <div class="card">
+            <div class="card-body px-3 py-4-5">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="stats-icon purple"><i class="iconly-boldShield-Done"></i></div>
+                    </div>
+                    <div class="col-md-8">
+                        <h6 class="text-muted font-semibold">PPE Detection</h6>
+                        <a href="/ppe/" class="font-extrabold mb-0 text-decoration-none">Launch →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3 col-md-6 mb-3">
+        <div class="card">
+            <div class="card-body px-3 py-4-5">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="stats-icon red"><i class="iconly-boldDanger"></i></div>
+                    </div>
+                    <div class="col-md-8">
+                        <h6 class="text-muted font-semibold">Smoke Detection</h6>
+                        <a href="/smoke/" class="font-extrabold mb-0 text-decoration-none">Launch →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3 col-md-6 mb-3">
+        <div class="card">
+            <div class="card-body px-3 py-4-5">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="stats-icon green"><i class="iconly-boldDiscovery"></i></div>
+                    </div>
+                    <div class="col-md-8">
+                        <h6 class="text-muted font-semibold">Nature & Wildlife</h6>
+                        <a href="/animaux/" class="font-extrabold mb-0 text-decoration-none">Launch →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3 col-md-6 mb-3">
+        <div class="card">
+            <div class="card-body px-3 py-4-5">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="stats-icon blue"><i class="iconly-boldLocation"></i></div>
+                    </div>
+                    <div class="col-md-8">
+                        <h6 class="text-muted font-semibold">Mining Analysis</h6>
+                        <a href="/illegal-mining/" class="font-extrabold mb-0 text-decoration-none">Launch →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── Feature Cards ─── -->
+<section class="row">
+    <!-- Worker Safety -->
+    <div class="col-12 col-lg-6">
+        <div class="card">
+            <div class="card-header"><h4><i class="bi bi-shield-check text-primary"></i> Worker Safety</h4></div>
+            <div class="card-body">
+                <a href="/ppe/" class="module-link d-flex align-items-center">
+                    <div class="stats-icon purple me-3" style="width:40px;height:40px;font-size:18px;"><i class="iconly-boldShield-Done"></i></div>
+                    <div>
+                        <h6 class="mb-0">PPE Detection</h6>
+                        <small class="text-muted">Detect helmets, vests, and safety gear on workers</small>
+                    </div>
+                </a>
+                <a href="/smoke/" class="module-link d-flex align-items-center">
+                    <div class="stats-icon red me-3" style="width:40px;height:40px;font-size:18px;"><i class="iconly-boldDanger"></i></div>
+                    <div>
+                        <h6 class="mb-0">Smoke & Fire Detection</h6>
+                        <small class="text-muted">Real-time detection of smoke and fire hazards</small>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nature & Wildlife -->
+    <div class="col-12 col-lg-6">
+        <div class="card">
+            <div class="card-header"><h4><i class="bi bi-tree-fill text-success"></i> Nature & Wildlife</h4></div>
+            <div class="card-body">
+                <a href="/animaux/" class="module-link d-flex align-items-center">
+                    <div class="stats-icon green me-3" style="width:40px;height:40px;font-size:18px;"><i class="iconly-boldDiscovery"></i></div>
+                    <div>
+                        <h6 class="mb-0">Animal Detection & Habitat Impact</h6>
+                        <small class="text-muted">Monitor wildlife and compare habitat before/after</small>
+                    </div>
+                </a>
+                <a href="/fish/" class="module-link d-flex align-items-center">
+                    <div class="stats-icon blue me-3" style="width:40px;height:40px;font-size:18px;"><i class="iconly-boldActivity"></i></div>
+                    <div>
+                        <h6 class="mb-0">Fish Behavior Tracking</h6>
+                        <small class="text-muted">Monitor fish swimming patterns and water quality</small>
+                    </div>
+                </a>
+                <a href="/predict/" class="module-link d-flex align-items-center">
+                    <div class="stats-icon green me-3" style="width:40px;height:40px;font-size:18px;"><i class="iconly-boldScan"></i></div>
+                    <div>
+                        <h6 class="mb-0">Deforestation Detection</h6>
+                        <small class="text-muted">Satellite image analysis for deforestation</small>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="row">
+    <!-- Mining -->
+    <div class="col-12 col-lg-6">
+        <div class="card">
+            <div class="card-header"><h4><i class="bi bi-exclamation-triangle-fill text-warning"></i> Mining Operations</h4></div>
+            <div class="card-body">
+                <a href="/illegal-mining/" class="module-link d-flex align-items-center">
+                    <div class="stats-icon red me-3" style="width:40px;height:40px;font-size:18px;"><i class="iconly-boldDanger"></i></div>
+                    <div>
+                        <h6 class="mb-0">Illegal Mining Detection</h6>
+                        <small class="text-muted">Detect unauthorized mining operations from satellite imagery</small>
+                    </div>
+                </a>
+                <a href="/mining/" class="module-link d-flex align-items-center">
+                    <div class="stats-icon blue me-3" style="width:40px;height:40px;font-size:18px;"><i class="iconly-boldLocation"></i></div>
+                    <div>
+                        <h6 class="mb-0">Mining vs Residential Segmentation</h6>
+                        <small class="text-muted">Classify areas as mining sites or residential zones</small>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Platform Info -->
+    <div class="col-12 col-lg-6">
+        <div class="card">
+            <div class="card-header"><h4><i class="bi bi-info-circle-fill text-info"></i> Platform Info</h4></div>
+            <div class="card-body">
+                <p>EcoGuard AI is an environmental monitoring platform powered by YOLO deep learning models. Each module provides:</p>
+                <ul>
+                    <li><strong>Image Detection</strong> — Upload a single image for analysis</li>
+                    <li><strong>Video Detection</strong> — Upload a video for frame-by-frame processing</li>
+                    <li><strong>Live Webcam</strong> — Real-time detection via your webcam</li>
+                    <li><strong>Explainability Heatmaps</strong> — Understand what the AI is focusing on</li>
+                </ul>
+                <p class="text-muted mb-0"><small>Select any module from the sidebar to get started.</small></p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Hidden: server-rendered chart data -->
+<script id="chart-data-script" type="application/json">
+{{ chart_summary_json|safe }}
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+(function() {
+    'use strict';
+
+    /* ───── module display names & colors ───── */
+    const MODULE_LABELS = {
+        ppe: 'PPE Detection',
+        fish: 'Fish Tracking',
+        smoke: 'Smoke Detection',
+        animaux: 'Animal Detection',
+        illegal_mining: 'Illegal Mining',
+        deforestation: 'Deforestation',
+        mining: 'Mining Segmentation',
+    };
+    const MODULE_COLORS = {
+        ppe: '#667eea',
+        fish: '#4facfe',
+        smoke: '#f5576c',
+        animaux: '#43e97b',
+        illegal_mining: '#fa709a',
+        deforestation: '#38f9d7',
+        mining: '#fccb90',
+    };
+    const MODULE_BG = {
+        ppe: 'rgba(102,126,234,0.18)',
+        fish: 'rgba(79,172,254,0.18)',
+        smoke: 'rgba(245,87,108,0.18)',
+        animaux: 'rgba(67,233,123,0.18)',
+        illegal_mining: 'rgba(250,112,154,0.18)',
+        deforestation: 'rgba(56,249,215,0.18)',
+        mining: 'rgba(252,203,144,0.18)',
+    };
+
+    /* ───── chart instances (for destroy before re-render) ───── */
+    let barChart, pieChart, lineChart, donutChart;
+
+    function renderCharts(data) {
+        /* ── Stat cards ── */
+        document.getElementById('stat-sessions').textContent = data.total_sessions || 0;
+        document.getElementById('stat-warnings').textContent = data.total_warnings || 0;
+        document.getElementById('stat-detections').textContent = data.total_detections || 0;
+        document.getElementById('stat-safe').textContent = data.total_safe || 0;
+
+        const modules = Object.keys(data.module_stats || {});
+        const hasData = modules.length > 0;
+
+        /* ── empty state ── */
+        ['bar','pie','line','donut'].forEach(id => {
+            const empty = document.getElementById(id + '-chart-empty');
+            if (empty) empty.style.display = hasData ? 'none' : 'flex';
+        });
+
+        if (!hasData) {
+            ['warningsBarChart','warningsPieChart','warningsLineChart','sessionsDonutChart'].forEach(id => {
+                const c = document.getElementById(id);
+                if (c) c.style.display = 'none';
+            });
+            return;
+        }
+
+        /* ── Destroy old charts ── */
+        if (barChart) barChart.destroy();
+        if (pieChart) pieChart.destroy();
+        if (lineChart) lineChart.destroy();
+        if (donutChart) donutChart.destroy();
+
+        /* Show canvases */
+        ['warningsBarChart','warningsPieChart','warningsLineChart','sessionsDonutChart'].forEach(id => {
+            const c = document.getElementById(id);
+            if (c) c.style.display = '';
+        });
+
+        /* ════════════ BAR CHART: Warnings & Detections per module ════════════ */
+        const barLabels = modules.map(m => MODULE_LABELS[m] || m);
+        const barWarnings = modules.map(m => data.module_stats[m].warnings);
+        const barDetections = modules.map(m => data.module_stats[m].detections);
+
+        barChart = new Chart(document.getElementById('warningsBarChart'), {
+            type: 'bar',
+            data: {
+                labels: barLabels,
+                datasets: [
+                    {
+                        label: 'Warnings',
+                        data: barWarnings,
+                        backgroundColor: modules.map(m => MODULE_COLORS[m] || '#f5576c'),
+                        borderRadius: 6,
+                        borderSkipped: false,
+                    },
+                    {
+                        label: 'Total Detections',
+                        data: barDetections,
+                        backgroundColor: modules.map(m => MODULE_BG[m] || 'rgba(79,172,254,0.18)'),
+                        borderRadius: 6,
+                        borderSkipped: false,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'top' } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        /* ════════════ PIE CHART: Warnings vs Safe ════════════ */
+        const totalWarn = data.total_warnings || 0;
+        const totalSafe = data.total_safe || 0;
+
+        pieChart = new Chart(document.getElementById('warningsPieChart'), {
+            type: 'pie',
+            data: {
+                labels: ['Warnings', 'Safe Detections'],
+                datasets: [{
+                    data: [totalWarn, totalSafe],
+                    backgroundColor: ['#f5576c', '#43e97b'],
+                    borderWidth: 2,
+                    borderColor: '#fff',
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { padding: 15, font: { size: 12 } } }
+                }
+            }
+        });
+
+        /* ════════════ LINE CHART: Warning timeline ════════════ */
+        const timeline = data.timeline || [];
+        const lineLabels = timeline.map((e, i) => {
+            const ts = e.timestamp || '';
+            // Show short time
+            if (ts.includes('T')) {
+                const parts = ts.split('T');
+                return parts[1] ? parts[1].substring(0, 5) : `#${i+1}`;
+            }
+            return `#${i+1}`;
+        });
+        const lineWarnings = timeline.map(e => e.warnings);
+        const lineDetections = timeline.map(e => e.detections);
+
+        lineChart = new Chart(document.getElementById('warningsLineChart'), {
+            type: 'line',
+            data: {
+                labels: lineLabels,
+                datasets: [
+                    {
+                        label: 'Warnings',
+                        data: lineWarnings,
+                        borderColor: '#f5576c',
+                        backgroundColor: 'rgba(245,87,108,0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        pointBackgroundColor: '#f5576c',
+                    },
+                    {
+                        label: 'Detections',
+                        data: lineDetections,
+                        borderColor: '#4facfe',
+                        backgroundColor: 'rgba(79,172,254,0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        pointBackgroundColor: '#4facfe',
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'top' } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' } },
+                    x: { grid: { display: false }, ticks: { maxRotation: 45 } }
+                }
+            }
+        });
+
+        /* ════════════ DONUT CHART: Sessions per module ════════════ */
+        const donutLabels = modules.map(m => MODULE_LABELS[m] || m);
+        const donutData = modules.map(m => data.module_stats[m].sessions);
+        const donutColors = modules.map(m => MODULE_COLORS[m] || '#ccc');
+
+        donutChart = new Chart(document.getElementById('sessionsDonutChart'), {
+            type: 'doughnut',
+            data: {
+                labels: donutLabels,
+                datasets: [{
+                    data: donutData,
+                    backgroundColor: donutColors,
+                    borderWidth: 2,
+                    borderColor: '#fff',
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '55%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { padding: 12, font: { size: 11 } } }
+                }
+            }
+        });
+    }
+
+    /* ───── Initial render from server-embedded JSON ───── */
+    document.addEventListener('DOMContentLoaded', () => {
+        try {
+            const el = document.getElementById('chart-data-script');
+            if (el) {
+                const data = JSON.parse(el.textContent);
+                renderCharts(data);
+            }
+        } catch (e) {
+            console.warn('Chart data parse error:', e);
+        }
+
+        /* ───── Refresh button ───── */
+        const refreshBtn = document.getElementById('refresh-charts-btn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', async () => {
+                refreshBtn.disabled = true;
+                refreshBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+                try {
+                    const res = await fetch('/api/chart-data/');
+                    const data = await res.json();
+                    renderCharts(data);
+                } catch (e) {
+                    console.error('Chart refresh error:', e);
+                } finally {
+                    refreshBtn.disabled = false;
+                    refreshBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i>';
+                }
+            });
+        }
+    });
+})();
+</script>
+{% endblock %}

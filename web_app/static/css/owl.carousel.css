@@ -1,0 +1,178 @@
+#owl {
+	overflow: hidden;
+	z-index: 1;
+	color: #fff;
+	position: relative;
+	padding: 0 0 67px;
+	margin-right: 1px;
+	background-color: #4c4c4c;
+	border-radius: 0 0 6px 6px;
+}
+
+.car_div {
+	background: url(../images/owl_sep.png) center 0 repeat;
+}
+
+#owl .owl-item {
+	float: left;
+	width: 100%;
+}
+
+#owl .item {
+	overflow: hidden;
+	position: relative;
+	text-align: center;
+}
+
+#owl .item img {
+	position: relative;
+	z-index: 2;
+}
+
+
+#owl .item a {
+	display: block;
+	position: relative;
+}
+
+#owl .item a:hover .capt {
+	opacity: 1;
+}
+
+#owl .item a .capt {
+	transition: 0.5s ease;
+    -o-transition: 0.5s ease;
+    -webkit-transition: 0.5s ease;
+	opacity: 0;
+	vertical-align: middle;
+	z-index: 10;
+	top: 0;
+	right: 0;
+	left: 0;
+	bottom: 0;
+	position: absolute;
+	background-color: #f9bd07;
+	color: #1a1714;
+	font: 36px/40px 'Roboto Condensed', sans-serif;
+}
+
+#owl .item a .capt span {
+	letter-spacing: 4px;
+	display: table-cell;
+	width: 313px;
+	height: 186px;
+	vertical-align: middle;
+}
+
+.owl-wrapper-outer {
+	overflow: hidden;
+	padding-top: 0px;
+}
+
+.owl-wrapper {
+	overflow: hidden;
+}
+
+#owl .owl-prev, #owl .owl-next {
+	cursor: pointer;
+	position: absolute;
+	display: block;
+	height: 37px;
+	left: 50%;
+	margin-left: -98px;
+	bottom: 15px;
+	width: 90px;
+	overflow: hidden;
+	text-indent: -999px;
+	background: url(../images/prevnext.png) 0 0 no-repeat;
+
+}
+
+
+
+#owl .owl-next {
+	right: 50%;
+	margin-right: -98px;
+	left: auto;
+	background-position: right bottom;
+
+}
+
+#owl .owl-next:hover {
+	background-position: right 0;
+}
+
+#owl .owl-prev:hover {
+	background-position: 0 bottom;
+}
+
+
+/* Owl content */
+
+
+
+.owl-carousel .owl-wrapper{
+	display: none;
+	position: relative;
+	-webkit-transform: translate3d(0px, 0px, 0px);
+	-webkit-perspective: 1000;
+}
+
+
+/*2nd*//*
+#owl1 {
+	overflow: hidden;
+	z-index: 1;
+	position: relative;
+	padding: 44px 0px 0px;
+	margin: -32px 0px 0;
+}
+
+#owl1 .owl-item {
+	float: left;
+	width: 100%;
+}
+
+#owl1 .item {
+	padding: 0 0 0 0;
+	position: relative;
+	text-align: left;
+}
+
+#owl1 .item img {
+}
+
+#owl1 .owl-wrapper-outer {
+	overflow: hidden;
+}
+
+#owl1 .owl-wrapper {
+	overflow: visible;
+}
+
+
+#owl1 .owl-prev, #owl1 .owl-next {
+	cursor: pointer;
+	position: absolute;
+	background: url(../images/prevnext.png) 0 0 no-repeat;
+	display: block;
+	height: 11px;
+	right: 46px;
+	top: 0;
+	width: 7px;
+	overflow: hidden;
+	text-indent: -999px;
+
+}
+
+#owl1 .owl-next {
+	right: 31px;
+	background-position: right 0;
+
+}
+
+#owl1 .owl-next:hover,
+#owl1 .owl-prev:hover {
+	opacity: 0.5;
+}
+*/

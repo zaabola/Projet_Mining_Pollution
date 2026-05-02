@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Fish Tracking{% endblock %}
+{% block page_title %}Fish Behavior Tracking{% endblock %}
+{% block page_subtitle %}Monitor fish swimming patterns and detect water contamination{% endblock %}
+
+{% block content %}
+<input type="hidden" id="page-mode" value="fish">
+{% with panel_color="info" show_video=True show_webcam=True how_title="Fish Behavior Analysis" how_text="This module uses a YOLOv8 model combined with a multi-object tracker to monitor fish behavior and detect water contamination:" how_step1="Fish Detection — detects and counts fish in each frame using YOLO" how_step2="Tracking — maintains individual fish identities across frames using Re-ID features (color, size, shape)" how_step3="Behavior Analysis — monitors swimming speed and direction changes per fish" how_step4="Water Quality Verdict — classifies fish behavior as Normal or Stressed, indicating possible contamination" how_tip="Upload underwater video footage for best results. Stressed fish exhibit erratic swimming patterns which may indicate phosphogypsum contamination." %}
+{% include 'includes/detection_panel.html' %}
+{% endwith %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'mazer/js/app-custom.js' %}"></script>
+{% endblock %}

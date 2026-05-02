@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./media:/app/media
+      - ./outputs:/app/outputs
+      - ${PPE_PROJECT_PATH:-..}:/data:ro
+    environment:
+      - DEBUG=True
+      - DJANGO_SETTINGS_MODULE=ppe_detector.settings
+    command: python run_server.py

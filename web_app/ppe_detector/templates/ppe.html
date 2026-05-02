@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}PPE Detection{% endblock %}
+{% block page_title %}PPE Detection{% endblock %}
+{% block page_subtitle %}Real-time AI monitoring for worker safety compliance — helmets, vests, and safety gear{% endblock %}
+
+{% block content %}
+<input type="hidden" id="page-mode" value="ppe">
+{% with panel_color="primary" show_video=True show_webcam=True how_title="PPE Compliance Detection" how_text="This module uses 3 YOLOv8 models simultaneously to check Personal Protective Equipment compliance per worker:" how_step1="Helmet Detection — detects hard hats on workers' heads" how_step2="Face Mask Detection — classifies masks as worn, missing, or incorrect" how_step3="Gas Mask Detection — identifies gas mask usage (indicates hazardous environment)" how_step4="Per-person verdict — Hat + Mask = ✅ SAFE | Hat only / Mask only / Nothing = ⚠️ WARNING | Gas Mask = 🚨 DANGER zone" how_tip="Use the webcam for live on-site monitoring. Every warning from video and webcam sessions is saved to the dashboard charts automatically." %}
+{% include 'includes/detection_panel.html' %}
+{% endwith %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'mazer/js/app-custom.js' %}"></script>
+{% endblock %}

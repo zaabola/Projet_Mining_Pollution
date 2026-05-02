@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}My Profile - EcoGuard AI{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div class="page-title">
+        <div class="row">
+            <div class="col-12 col-md-6 order-md-1 order-last">
+                <h3><i class="bi bi-person-circle me-2"></i>My Profile</h3>
+                <p class="text-subtitle text-muted">View and manage your account information</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="section">
+    <div class="row">
+        <!-- Profile Card -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm" style="border-radius: 16px; overflow: hidden;">
+                <div class="card-body py-5 text-center" style="background: linear-gradient(135deg, #435ebe 0%, #5c7de0 100%);">
+                    <div style="width: 90px; height: 90px; border-radius: 50%; background: white; margin: 0 auto 15px auto; line-height: 90px;">
+                        <i class="bi bi-person-fill" style="font-size: 3rem; color: #435ebe; vertical-align: middle; position: relative; top: 4px;"></i>
+                    </div>
+                    <h4 class="text-white mb-1">{{ user.username }}</h4>
+                    <p style="color: rgba(255,255,255,0.7); margin: 0;">{% if user.is_superuser %}Administrator{% else %}User{% endif %}</p>
+                </div>
+                <div class="card-body">
+                    <table style="width: 100%;">
+                        <tr>
+                            <td style="padding: 12px 0; vertical-align: middle; width: 40px; text-align: center;">
+                                <i class="bi bi-envelope-fill" style="color: #435ebe; font-size: 1.2rem;"></i>
+                            </td>
+                            <td style="padding: 12px 0; vertical-align: middle;">
+                                <small class="text-muted d-block">Email</small>
+                                <strong>{{ user.email|default:"Not set" }}</strong>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px 0; vertical-align: middle; width: 40px; text-align: center;">
+                                <i class="bi bi-calendar-fill" style="color: #435ebe; font-size: 1.2rem;"></i>
+                            </td>
+                            <td style="padding: 12px 0; vertical-align: middle;">
+                                <small class="text-muted d-block">Member Since</small>
+                                <strong>{{ user.date_joined|date:"M d, Y" }}</strong>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px 0; vertical-align: middle; width: 40px; text-align: center;">
+                                <i class="bi bi-clock-fill" style="color: #435ebe; font-size: 1.2rem;"></i>
+                            </td>
+                            <td style="padding: 12px 0; vertical-align: middle;">
+                                <small class="text-muted d-block">Last Login</small>
+                                <strong>{{ user.last_login|date:"M d, Y H:i"|default:"Never" }}</strong>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Password Change Form -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm" style="border-radius: 16px;">
+                <div class="card-header" style="background: transparent; border-bottom: 2px solid #f2f7ff;">
+                    <h5 class="card-title mb-0"><i class="bi bi-shield-lock me-2 text-primary"></i>Change Password</h5>
+                </div>
+                <div class="card-body">
+
+                    {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert" style="border-radius: 12px;">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+
+                    {% if password_form.errors %}
+                    <div class="alert alert-danger" style="border-radius: 12px;">
+                        <i class="bi bi-exclamation-circle me-2"></i>
+                        <ul class="mb-0" style="list-style: none; padding: 0;">
+                        {% for field, errors in password_form.errors.items %}
+                            {% for error in errors %}
+                            <li>{{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    <form method="post" action="/profile/">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="old_password" class="form-label fw-bold">Current Password</label>
+                            <input type="password" class="form-control" id="old_password" name="old_password" placeholder="Enter current password" required style="border-radius: 10px; padding: 12px;">
+                        </div>
+                        <div class="mb-3">
+                            <label for="new_password1" class="form-label fw-bold">New Password</label>
+                            <input type="password" class="form-control" id="new_password1" name="new_password1" placeholder="Enter new password" required style="border-radius: 10px; padding: 12px;">
+                        </div>
+                        <div class="mb-3">
+                            <label for="new_password2" class="form-label fw-bold">Confirm New Password</label>
+                            <input type="password" class="form-control" id="new_password2" name="new_password2" placeholder="Confirm new password" required style="border-radius: 10px; padding: 12px;">
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="border-radius: 10px; padding: 10px 30px;">
+                            <i class="bi bi-check-circle me-1"></i> Update Password
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
